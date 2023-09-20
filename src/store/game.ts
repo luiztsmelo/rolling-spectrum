@@ -147,18 +147,20 @@ export const useGameStore = defineStore('game', () => {
 
   watch(score, value => {
     if (value) {
-      const bar = document.querySelector(`.bar-${bars.value[0].id}`)
+      const bar = document.querySelector(`.bar-${bars.value[0].id}`) as HTMLElement
       const animations = document.getAnimations()
 
+      // @ts-ignore
       const barAnimation = animations.find(animation => animation.effect.target.className.includes(`bar-${bars.value[0].id}`))
+      if (!barAnimation) return
 
       barAnimation.commitStyles()
       barAnimation.cancel()
 
       if (bar) {
         const animation = bar.animate([
-          { top: barAnimation?.effect.target.style.top, opacity: 1, },
-          { top: `${Number(barAnimation?.effect.target.style.top.replace('%', '')) + 10}%`, opacity: 0 }
+          { top: bar.style.top, opacity: 1, },
+          { top: `${Number(bar.style.top.replace('%', '')) + 10}%`, opacity: 0 }
         ], {
           duration: 800,
           easing: 'ease-out',

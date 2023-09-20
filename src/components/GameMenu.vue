@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useGameStore } from '../store/game'
 import { generateRandomColors } from '@/logic/helpers'
 
-const game = useGameStore()
+interface CharObject {
+  char: string
+  color: string
+  fontSize: number
+}
 
 const emit = defineEmits(['play'])
 
 const gameTitle = 'Rolling Spectrum'
-const gameTitleChars = ref([])
+const gameTitleChars = ref<CharObject[]>([])
 
 function animateGameTitle() {
   for (const [index, char] of gameTitle.split('').entries()) {
@@ -34,9 +37,16 @@ onMounted(() => {
 <template>
   <div class="menu">
     <span class="game-title">
-      <span class="char" v-for="(char, index) in gameTitleChars" :key="index" :style="{ color: char.color, fontSize: char.fontSize + 'px' }">{{ char.char }}</span>
+      <span 
+        class="char" 
+        v-for="(char, index) in gameTitleChars" 
+        :key="index" 
+        :style="{ color: char.color, fontSize: char.fontSize + 'px' }"
+      >
+        {{ char.char }}
+      </span>
     </span>
-    <!-- <span>{{ game.getStatus.value === 'gameover' ? 'Perdeu, otário' : 'Rolling Spectrum' }}</span> -->
+
     <button @click="emit('play')">Play</button>
   </div>
 </template>
@@ -77,4 +87,3 @@ button {
   cursor: pointer;
 }
 </style>
-../store/game

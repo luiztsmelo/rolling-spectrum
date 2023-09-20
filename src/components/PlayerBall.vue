@@ -30,4 +30,3 @@ const style = computed(() => {
   z-index: 3;
 }
 </style>
-../store/player

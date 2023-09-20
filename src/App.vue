@@ -27,12 +27,13 @@ async function play() {
   game.play()
 }
 
-const linesPassed = []
+const linesPassed = [] as string[]
 
 function detectCollisions() {
   if (game.getStatus === 'leveling') return
 
   const playerBall = document.querySelector('#player-ball')
+  if (!playerBall) return
 
   const playerRect = playerBall.getBoundingClientRect()
 

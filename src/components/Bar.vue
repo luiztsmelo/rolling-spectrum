@@ -9,15 +9,16 @@ const props = defineProps({
   }
 })
 
-onMounted(() => {
+function animateBar () {
   const bar = document.querySelector(`.bar-${props.bar.id}`)
+  if (!bar) return
 
   let firstGridTemplateColumns = props.bar.lines.map(() => `${getRandomNumber(1, 4)}fr `).join(' ')
   let secondGridTemplateColumns = props.bar.lines.map(() => `${getRandomNumber(1, 4)}fr `).join(' ')
   let thirdGridTemplateColumns = props.bar.lines.map(() => `${getRandomNumber(1, 4)}fr `).join(' ')
 
-  bar?.animate([
-    { top: "0%", transform: 'scale(0)', opacity: 1, gridTemplateColumns: props.bar.lines.map(() => '1fr').join(' ') },
+  bar.animate([
+    { top: "0%", transform: 'scale(0)', opacity: 0, gridTemplateColumns: props.bar.lines.map(() => '1fr').join(' ') },
     { top: "10%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: props.bar.lines.map(() => '1fr').join(' ') },
     { top: "20%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: firstGridTemplateColumns },
     { top: "40%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: secondGridTemplateColumns },
@@ -28,12 +29,16 @@ onMounted(() => {
     delay: props.bar.delay,
     easing: 'ease-out'
   })
+}
+
+onMounted(() => {
+  animateBar()
 })
 </script>
 
 <template>
   <div :class="`bar bar-${props.bar.id}`">
-    <slot></slot>
+    <slot/>
   </div>
 </template>
 

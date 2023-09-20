@@ -66,8 +66,6 @@ export const usePlayerStore = defineStore('player', () => {
 
     velocity.value.x *= frictionFactor
     velocity.value.y *= frictionFactor
-
-    console.log(velocity.value.x)
   }
 
   function setSize(value: number) {

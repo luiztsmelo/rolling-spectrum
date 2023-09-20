@@ -90,7 +90,7 @@ onMounted(() => {
       <PlayerBall ref="player-ball" :player="player"></PlayerBall>
     </div>
 
-    <GameMenu @play="play()" v-else></GameMenu>
+    <GameMenu @play="play()" v-else />
   </main>
 </template>
 
@@ -141,4 +141,3 @@ main {
   }
 }
 </style>
-./store/game./store/player

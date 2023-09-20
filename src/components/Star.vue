@@ -14,12 +14,13 @@ const props = defineProps({
 
 const emit = defineEmits(['disappear'])
 
-onMounted(() => {
+function animateStar () {
   const star = document.querySelector(`.star-${props.star.id}`)
+  if (!star) return
 
   const top = getRandomNumber(0, 90)
 
-  const starAnimation = star?.animate([
+  const starAnimation = star.animate([
     { top: `${top}%`, opacity: 0, transform: `scale(${getRandomNumber(0, 3)})` },
     { opacity: 1, transform: `scale(${getRandomNumber(0, 3)})` },
     { top: `${top + 7}%`, opacity: 0, transform: `scale(${getRandomNumber(0, 3)})` }
@@ -30,9 +31,11 @@ onMounted(() => {
 
   if (!starAnimation) return
 
-  starAnimation.onfinish = () => {
-    emit('disappear')
-  }
+  starAnimation.onfinish = () => emit('disappear')
+}
+
+onMounted(() => {
+  animateStar()
 })
 </script>
 
@@ -40,7 +43,8 @@ onMounted(() => {
   <div 
     :class="`star star-${props.star.id}`"
     :style="{ left: `${getRandomNumber(0, game.settings.width - 2)}px`, width: `${props.star.size}px` , height: `${props.star.size}px` }" 
-  ></div>
+  >
+  </div>
 </template>
 
 <style scoped>
@@ -52,4 +56,3 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.85);
 }
 </style>
-../store/game

@@ -12,7 +12,7 @@ export const useGameStore = defineStore('game', () => {
 
   const settings = {
     levelsCount: 10,
-    roundsPerLevelCount: 3,
+    roundsPerLevel: 3,
     width: 720,
     height: window.innerHeight
   }
@@ -25,39 +25,46 @@ export const useGameStore = defineStore('game', () => {
   
   const bars = ref<Bar[]>([])
   const stars = ref(new Map())
+
   let starsInterval = 0
 
   function generateLevelsDefinitions() {
     for (let i = 0; i < settings.levelsCount; i++) {
-      levelsDefinitions.value.push({
+      const levelDefinition = {
         name: `level ${i + 1}`,
         colors: generateRandomColors(i < 5 ? i + 2 : 5),
         bgColor: `#00${i < 9 ? i + 1 : 9}`,
         speed: 8000 - (i * 400)
-      })
+      }
+
+      levelsDefinitions.value.push(levelDefinition)
     }
   }
 
   function generateBars() {
-    for (let i = 0; i < settings.roundsPerLevelCount; i++) {
+    for (let i = 0; i < settings.roundsPerLevel; i++) {
       const lines = []
 
       const colors = getRandomSortedColors(getLevelDefinitions.value.colors)
 
       for (let j = 0; j < colors.length; j++) {
-        lines.push({
+        const line = {
           id: window.crypto.randomUUID(),
           color: colors[j],
           size: getRandomNumber(1, 6)
-        })
+        }
+
+        lines.push(line)
       }
-      
-      bars.value.push({
+
+      const bar = {
         id: window.crypto.randomUUID(),
         speed: getLevelDefinitions.value.speed,
         delay: (i + 1) * 3000,
         lines
-      })
+      }
+      
+      bars.value.push(bar)
     }
   }
 
@@ -109,7 +116,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function setRound() {
-    if (round.value === settings.roundsPerLevelCount - 1) {
+    if (round.value === settings.roundsPerLevel - 1) {
       round.value = 0
       nextLevel()
     } else {
@@ -148,6 +155,8 @@ export const useGameStore = defineStore('game', () => {
   watch(score, value => {
     if (value) {
       const bar = document.querySelector(`.bar-${bars.value[0].id}`) as HTMLElement
+      if (!bar) return
+
       const animations = document.getAnimations()
 
       // @ts-ignore
@@ -157,19 +166,17 @@ export const useGameStore = defineStore('game', () => {
       barAnimation.commitStyles()
       barAnimation.cancel()
 
-      if (bar) {
-        const animation = bar.animate([
-          { top: bar.style.top, opacity: 1, },
-          { top: `${Number(bar.style.top.replace('%', '')) + 10}%`, opacity: 0 }
-        ], {
-          duration: 800,
-          easing: 'ease-out',
-          fill: 'forwards'
-        })
+      const animation = bar.animate([
+        { top: bar.style.top, opacity: 1, },
+        { top: `${Number(bar.style.top.replace('%', '')) + 10}%`, opacity: 0 }
+      ], {
+        duration: 800,
+        easing: 'ease-out',
+        fill: 'forwards'
+      })
 
-        animation.onfinish = () => {
-          bars.value = bars.value.slice(1)
-        }
+      animation.onfinish = () => {
+        bars.value = bars.value.slice(1)
       }
     }
   })

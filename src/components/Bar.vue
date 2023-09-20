@@ -1,0 +1,51 @@
+<script setup lang="ts">
+import { getRandomNumber } from '@/logic/helpers'
+import { onMounted } from 'vue'
+
+const props = defineProps({
+  bar: {
+    type: Object,
+    required: true
+  }
+})
+
+onMounted(() => {
+  const bar = document.querySelector(`.bar-${props.bar.id}`)
+
+  let firstGridTemplateColumns = props.bar.lines.map(() => `${getRandomNumber(1, 4)}fr `).join(' ')
+  let secondGridTemplateColumns = props.bar.lines.map(() => `${getRandomNumber(1, 4)}fr `).join(' ')
+  let thirdGridTemplateColumns = props.bar.lines.map(() => `${getRandomNumber(1, 4)}fr `).join(' ')
+
+  bar?.animate([
+    { top: "0%", transform: 'scale(0)', opacity: 1, gridTemplateColumns: props.bar.lines.map(() => '1fr').join(' ') },
+    { top: "10%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: props.bar.lines.map(() => '1fr').join(' ') },
+    { top: "20%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: firstGridTemplateColumns },
+    { top: "40%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: secondGridTemplateColumns },
+    { top: "70%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: thirdGridTemplateColumns },
+    { top: "100%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: firstGridTemplateColumns }
+  ], {
+    duration: props.bar.speed,
+    delay: props.bar.delay,
+    easing: 'ease-out'
+  })
+})
+</script>
+
+<template>
+  <div :class="`bar bar-${props.bar.id}`">
+    <slot></slot>
+  </div>
+</template>
+
+<style scoped>
+.bar {
+  position: absolute;
+  left: 10px;
+  display: grid;
+  width: calc(100% - 20px);
+  gap: 5px;
+  height: 7px;
+  z-index: 2;
+  opacity: 0;
+}
+</style>

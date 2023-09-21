@@ -155,7 +155,6 @@ export const useGameStore = defineStore('game', () => {
 
   const increaseScore = () => {
     score.value++
-    console.log(bars.value)
   }
 
   const play = () => {

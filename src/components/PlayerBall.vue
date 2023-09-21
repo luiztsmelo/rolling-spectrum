@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { hslToRgba } from '../logic/helpers'
-import { usePlayerStore } from '../store/player'
+import { hslToRgba } from '@/utils'
+import { usePlayerStore } from '@/store/player'
 
 const player = usePlayerStore()
 
 const style = computed(() => {
   return {
-    width: `${player.getSize}px`,
-    background: player.getColor,
+    width: `${player.size}px`,
+    background: player.color,
     transform: `translate(${player.position.x}px, -${player.position.y}px)`,
-    boxShadow: `2px 2px 50px 5px ${hslToRgba(player.getColor, 1)}`
+    boxShadow: `2px 2px 50px 5px ${hslToRgba(player.color, 1)}`
   }
 })
 </script>

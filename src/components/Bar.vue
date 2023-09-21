@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getRandomNumber } from '@/logic/helpers'
+import { getRandomNumber } from '@/utils'
 import { onMounted } from 'vue'
 
 const props = defineProps({

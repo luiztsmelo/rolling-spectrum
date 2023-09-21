@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { getRandomNumber } from '@/logic/helpers'
-import { useGameStore } from '../store/game'
+import { getRandomNumber } from '@/utils'
+import { useGameStore } from '@/store/game'
 
 const game = useGameStore()
 

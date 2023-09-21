@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useGameStore } from './game'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useGameStore } from '@/store/game'
 
 type Direction = 'Up' | 'Down' | 'Left' | 'Right'
 
@@ -21,16 +21,13 @@ export const usePlayerStore = defineStore('player', () => {
     right: false
   } as { [key: string]: boolean }
 
-  const getSize = computed(() => size.value)
-  const getColor = computed(() => color.value)
-
   function reset() {
     position.value = { x: game.settings.width / 2, y: 100 }
     velocity.value = { x: 0, y: 0 }
   }
 
   function move(direction: Direction, isMovingNow: boolean) {
-    const isPlaying = game.getStatus === 'playing' || game.getStatus === 'leveling'
+    const isPlaying = game.status === 'playing' || game.status === 'leveling'
     if (!isPlaying) return
   
     const axis = direction === 'Up' || direction === 'Down' ? 'y' : 'x'
@@ -68,19 +65,15 @@ export const usePlayerStore = defineStore('player', () => {
     velocity.value.y *= frictionFactor
   }
 
-  function setSize(value: number) {
-    size.value = value
-  }
-
-  function setColor(value: string) {
-    color.value = value
-  }
-
   const keyDownHandler = (event: KeyboardEvent) => {
     if (!event.key.includes('Arrow')) return
 
     const direction = event.key.replace('Arrow', '') as Direction
     move(direction, true)
+  }
+
+  function setColor (value: string) {
+    color.value = value
   }
 
   onMounted(() => {
@@ -101,10 +94,9 @@ export const usePlayerStore = defineStore('player', () => {
   })
 
   return {
+    size, 
+    color,
     position,
-    getSize,
-    getColor,
-    setSize,
     setColor,
     reset
   }

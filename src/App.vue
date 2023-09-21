@@ -1,83 +1,21 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import GameMenu from './components/GameMenu.vue'
-import Bar from './components/Bar.vue'
-import Line from './components/Line.vue'
-import Star from './components/Star.vue'
-import PlayerBall from './components/PlayerBall.vue'
-import { useGameStore } from './store/game'
-import { usePlayerStore } from './store/player'
-import { getRandomSortedColors } from './logic/helpers'
-import hitSoundSfx from './assets/hit-sound.wav'
+import GameMenu from '@/components/GameMenu.vue'
+import Bar from '@/components/Bar.vue'
+import Line from '@/components/Line.vue'
+import Star from '@/components/Star.vue'
+import PlayerBall from '@/components/PlayerBall.vue'
+import { useGameStore } from '@/store/game'
+import { usePlayerStore } from '@/store/player'
 
 const game = useGameStore()
 const player = usePlayerStore()
-
-const hitSound = new Audio(hitSoundSfx)
-
-function gameLoop() {
-  if (game.getStatus === 'playing') {
-    detectCollisions()
-  }
-
-  requestAnimationFrame(gameLoop)
-}
-
-async function play() {
-  game.play()
-}
-
-const linesPassed = [] as string[]
-
-function detectCollisions() {
-  if (game.getStatus === 'leveling') return
-
-  const playerBall = document.querySelector('#player-ball')
-  if (!playerBall) return
-
-  const playerRect = playerBall.getBoundingClientRect()
-
-  if (game.bars.length === 0) return
-
-  for (const bar of game.bars) {
-    for (const line of bar.lines) {
-      const lineEl = document.querySelector(`#line-${line.id}`)
-      if (!lineEl) return
-
-      const lineRect = lineEl.getBoundingClientRect()
-
-      if (linesPassed.includes(line.id))  continue
-
-      if (
-        playerRect.right > lineRect.left &&
-        playerRect.left < lineRect.right &&
-        playerRect.bottom > lineRect.top &&
-        playerRect.top < lineRect.bottom
-      ) {
-        if (line.color === player.getColor) {
-          linesPassed.push(line.id)
-          hitSound.play()
-          game.increaseScore()
-          game.setRound()
-          player.setColor(getRandomSortedColors(game.getLevelDefinitions.colors)[0])
-        } else {
-          game.gameOver()
-        }
-      }
-    }
-  }
-}
-
-onMounted(() => {
-  gameLoop()
-})
 </script>
 
 <template>
   <main>
-    <div id="game-board" :style="{ width: `${game.settings.width}px`, height: `${game.settings.height}px`, background: game.getLevelDefinitions.bgColor }" v-if="game.getStatus === 'playing' || game.getStatus === 'leveling'">
+    <div id="game-board" :style="{ width: `${game.settings.width}px`, height: `${game.settings.height}px`, background: game.getLevelDefinitions.bgColor }" v-if="game.status === 'playing' || game.status === 'leveling'">
       <div class="game-infos">
-        <div class="score">{{ game.getScore }}</div>
+        <div class="score">{{ game.score }}</div>
         <div class="level">{{ game.getLevelDefinitions.name }}</div>
       </div>
 
@@ -90,7 +28,7 @@ onMounted(() => {
       <PlayerBall ref="player-ball" :player="player"></PlayerBall>
     </div>
 
-    <GameMenu @play="play()" v-else />
+    <GameMenu @play="game.play()" v-else />
   </main>
 </template>
 

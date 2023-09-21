@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { generateRandomColors } from '@/logic/helpers'
+import { generateRandomColors } from '@/utils'
 
 interface CharObject {
   char: string

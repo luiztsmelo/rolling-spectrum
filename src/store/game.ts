@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { usePlayerStore } from '@/store/player'
-import { getRandomNumber, getRandomSortedColors, generateRandomColors } from '@/logic/helpers'
+import { getRandomNumber, getRandomSortedColors, generateRandomColors } from '@/utils'
 import type { GameStatus, LevelDefinition, Bar } from '@/types'
+import hitSoundSfx from '@/assets/hit-sound.wav'
 import NextLevelSoundSfx from '@/assets/next-level.wav'
 
 const nextLevelSound = new Audio(NextLevelSoundSfx)
+const hitSound = new Audio(hitSoundSfx)
 
 export const useGameStore = defineStore('game', () => {
   const player = usePlayerStore()
@@ -27,6 +29,8 @@ export const useGameStore = defineStore('game', () => {
   const stars = ref(new Map())
 
   let starsInterval = 0
+
+  const linesPassed = [] as string[]
 
   function generateLevelsDefinitions() {
     for (let i = 0; i < settings.levelsCount; i++) {
@@ -80,29 +84,56 @@ export const useGameStore = defineStore('game', () => {
     }, 40)
   }
 
+  function detectCollisions() {
+    if (status.value === 'leveling' || bars.value.length === 0) return
+
+    const playerBall = document.querySelector('#player-ball')
+    if (!playerBall) return
+
+    const playerBallRect = playerBall.getBoundingClientRect()
+
+    for (const bar of bars.value) {
+      for (const line of bar.lines) {
+        const lineEl = document.querySelector(`#line-${line.id}`)
+        if (!lineEl) return
+
+        const lineRect = lineEl.getBoundingClientRect()
+
+        if (linesPassed.includes(line.id)) continue
+
+        const collisionDetected = (
+          playerBallRect.right > lineRect.left &&
+          playerBallRect.left < lineRect.right &&
+          playerBallRect.bottom > lineRect.top &&
+          playerBallRect.top < lineRect.bottom
+        )
+
+        if (collisionDetected) {
+          if (line.color === player.color) {
+            linesPassed.push(line.id)
+            hitSound.play()
+            increaseScore()
+            setRound()
+            player.setColor(getRandomSortedColors(getLevelDefinitions.value.colors)[0])
+          } else {
+            gameOver()
+          }
+        }
+      }
+    }
+  }
+
+  function detectCollisionsLoop() {
+    if (status.value === 'playing') {
+      detectCollisions()
+    }
+  
+    requestAnimationFrame(detectCollisionsLoop)
+  }
+
   const getLevelDefinitions = computed(() => {
     return levelsDefinitions.value[level.value]
-  }) 
-
-  const getBars = computed(() => {
-    return bars
   })
-
-  const getStatus = computed(() => {
-    return status.value
-  }) 
-
-  const getScore = computed(() => {
-    return score.value
-  }) 
-
-  const getLevel = computed(() => {
-    return level.value
-  }) 
-
-  const getRound = computed(() => {
-    return round.value
-  }) 
 
   function nextLevel() {
     level.value++
@@ -128,6 +159,15 @@ export const useGameStore = defineStore('game', () => {
     score.value++
   }
 
+  function play() {
+    generateLevelsDefinitions()
+    generateBars()
+    generateStars()
+    detectCollisionsLoop()
+    player.setColor(getRandomSortedColors(getLevelDefinitions.value.colors)[0])
+    status.value = 'playing'
+  }
+
   function reset() {
     status.value = 'idle'
     level.value = 0
@@ -137,14 +177,6 @@ export const useGameStore = defineStore('game', () => {
     stars.value.clear()
     clearInterval(starsInterval)
     player.reset()
-  }
-
-  function play() {
-    generateLevelsDefinitions()
-    generateBars()
-    generateStars()
-    player.setColor(getRandomSortedColors(getLevelDefinitions.value.colors)[0])
-    status.value = 'playing'
   }
 
   function gameOver() {
@@ -183,15 +215,13 @@ export const useGameStore = defineStore('game', () => {
 
   return {
     settings,
+    status,
+    level,
+    round,
     score,
     bars,
     stars,
     getLevelDefinitions,
-    getStatus,
-    getScore,
-    getLevel,
-    getRound,
-    getBars,
     generateBars,
     nextLevel,
     setRound,

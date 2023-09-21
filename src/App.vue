@@ -13,7 +13,11 @@ const player = usePlayerStore()
 
 <template>
   <main>
-    <div id="game-board" :style="{ width: `${game.settings.width}px`, height: `${game.settings.height}px`, background: game.getLevelDefinitions.bgColor }" v-if="game.status === 'playing' || game.status === 'leveling'">
+    <div 
+      id="game-board" 
+      :style="{ width: `${game.settings.width}px`, height: `${game.settings.height}px`, background: game.getLevelDefinitions.bgColor }" 
+      v-if="game.status === 'playing' || game.status === 'leveling'"
+    >
       <div class="game-infos">
         <div class="score">{{ game.score }}</div>
         <div class="level">{{ game.getLevelDefinitions.name }}</div>

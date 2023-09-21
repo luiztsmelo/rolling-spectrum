@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { getRandomNumber } from '@/utils'
 import { onMounted } from 'vue'
+import { useGameStore } from '@/store/game'
+
+const game = useGameStore()
 
 const props = defineProps({
   bar: {
@@ -18,12 +21,12 @@ function animateBar () {
   let thirdGridTemplateColumns = props.bar.lines.map(() => `${getRandomNumber(1, 4)}fr `).join(' ')
 
   bar.animate([
-    { top: "0%", transform: 'scale(0)', opacity: 0, gridTemplateColumns: props.bar.lines.map(() => '1fr').join(' ') },
-    { top: "10%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: props.bar.lines.map(() => '1fr').join(' ') },
-    { top: "20%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: firstGridTemplateColumns },
-    { top: "40%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: secondGridTemplateColumns },
-    { top: "70%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: thirdGridTemplateColumns },
-    { top: "100%", transform: 'scale(1)', opacity: 1, gridTemplateColumns: firstGridTemplateColumns }
+    { transform: 'translateY(0) scale(0)', opacity: 0, gridTemplateColumns: props.bar.lines.map(() => '1fr').join(' ') },
+    { transform: `translateY(${0.1 * game.settings.height}px) scale(1)`, opacity: 1, gridTemplateColumns: props.bar.lines.map(() => '1fr').join(' ') },
+    { transform: `translateY(${0.2 * game.settings.height}px) scale(1)`, opacity: 1, gridTemplateColumns: firstGridTemplateColumns },
+    { transform: `translateY(${0.4 * game.settings.height}px) scale(1)`, opacity: 1, gridTemplateColumns: secondGridTemplateColumns },
+    { transform: `translateY(${0.7 * game.settings.height}px) scale(1)`, opacity: 1, gridTemplateColumns: thirdGridTemplateColumns },
+    { transform: `translateY(${game.settings.height}px) scale(1)`, opacity: 1, gridTemplateColumns: firstGridTemplateColumns }
   ], {
     duration: props.bar.speed,
     delay: props.bar.delay,
@@ -44,12 +47,12 @@ onMounted(() => {
 
 <style scoped>
 .bar {
+  display: grid;
   position: absolute;
   left: 10px;
-  display: grid;
   width: calc(100% - 20px);
-  gap: 5px;
   height: 7px;
+  gap: 5px;
   z-index: 2;
   opacity: 0;
 }

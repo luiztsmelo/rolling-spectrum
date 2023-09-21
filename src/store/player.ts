@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useGameStore } from '@/store/game'
 
 type Direction = 'Up' | 'Down' | 'Left' | 'Right'
@@ -8,7 +8,7 @@ export const usePlayerStore = defineStore('player', () => {
   const game = useGameStore()
 
   const size = ref(22)
-  const color = ref('#F6FA70')
+  const color = ref('')
   const position = ref({ x: 0, y: 0 })
   const velocity = ref({ x: 0, y: 0 })
   const acceleration = ref(0.09)
@@ -87,10 +87,6 @@ export const usePlayerStore = defineStore('player', () => {
     }
 
     animatePositionUpdate()
-  })
-
-  onBeforeUnmount(() => {
-    document.removeEventListener('keydown', keyDownHandler)
   })
 
   return {

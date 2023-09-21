@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { usePlayerStore } from '@/store/player'
-import { getRandomNumber, getRandomSortedColors, generateRandomColors } from '@/utils'
-import type { GameStatus, LevelDefinition, Bar } from '@/types'
+import { getRandomNumber, shuffleColors, generateRandomColors } from '@/utils'
 import hitSoundSfx from '@/assets/hit-sound.wav'
 import NextLevelSoundSfx from '@/assets/next-level.wav'
+import type { GameStatus, LevelDefinition, Bar } from '@/types'
 
 const nextLevelSound = new Audio(NextLevelSoundSfx)
 const hitSound = new Audio(hitSoundSfx)
@@ -16,7 +16,7 @@ export const useGameStore = defineStore('game', () => {
     levelsCount: 10,
     roundsPerLevel: 3,
     width: 720,
-    height: window.innerHeight
+    height: window.innerHeight,
   }
 
   const levelsDefinitions = ref<LevelDefinition[]>([])
@@ -24,40 +24,35 @@ export const useGameStore = defineStore('game', () => {
   const level = ref(0)
   const round = ref(0)
   const score = ref(0)
-  
   const bars = ref<Bar[]>([])
   const stars = ref(new Map())
-
   let starsInterval = 0
 
-  const linesPassed = [] as string[]
+  const linesPassed = new Set<string>()
 
-  function generateLevelsDefinitions() {
+  const generateLevelsDefinitions = () => {
     for (let i = 0; i < settings.levelsCount; i++) {
       const levelDefinition = {
         name: `level ${i + 1}`,
         colors: generateRandomColors(i < 5 ? i + 2 : 5),
         bgColor: `#00${i < 9 ? i + 1 : 9}`,
-        speed: 8000 - (i * 400)
+        speed: 7500 - i * 400,
       }
-
       levelsDefinitions.value.push(levelDefinition)
     }
   }
 
-  function generateBars() {
+  const generateBars = () => {
     for (let i = 0; i < settings.roundsPerLevel; i++) {
       const lines = []
-
-      const colors = getRandomSortedColors(getLevelDefinitions.value.colors)
+      const colors = shuffleColors(getLevelDefinitions.value.colors)
 
       for (let j = 0; j < colors.length; j++) {
         const line = {
           id: window.crypto.randomUUID(),
           color: colors[j],
-          size: getRandomNumber(1, 6)
+          size: getRandomNumber(1, 6),
         }
-
         lines.push(line)
       }
 
@@ -65,26 +60,25 @@ export const useGameStore = defineStore('game', () => {
         id: window.crypto.randomUUID(),
         speed: getLevelDefinitions.value.speed,
         delay: (i + 1) * 3000,
-        lines
+        lines,
       }
-      
+
       bars.value.push(bar)
     }
   }
 
-  function generateStars() {
+  const generateStars = () => {
     starsInterval = setInterval(() => {
       const star = {
         id: window.crypto.randomUUID(),
         size: getRandomNumber(1, 2),
-        speed: getRandomNumber(3000, 6000)
+        speed: getRandomNumber(3000, 6000),
       }
-  
       stars.value.set(star.id, star)
-    }, 40)
+    }, 50)
   }
 
-  function detectCollisions() {
+  const detectCollisions = () => {
     if (status.value === 'leveling' || bars.value.length === 0) return
 
     const playerBall = document.querySelector('#player-ball')
@@ -95,26 +89,21 @@ export const useGameStore = defineStore('game', () => {
     for (const bar of bars.value) {
       for (const line of bar.lines) {
         const lineEl = document.querySelector(`#line-${line.id}`)
-        if (!lineEl) return
+        if (!lineEl) continue
 
         const lineRect = lineEl.getBoundingClientRect()
 
-        if (linesPassed.includes(line.id)) continue
+        if (linesPassed.has(line.id)) continue
 
-        const collisionDetected = (
+        const collisionDetected =
           playerBallRect.right > lineRect.left &&
           playerBallRect.left < lineRect.right &&
           playerBallRect.bottom > lineRect.top &&
           playerBallRect.top < lineRect.bottom
-        )
 
         if (collisionDetected) {
           if (line.color === player.color) {
-            linesPassed.push(line.id)
-            hitSound.play()
-            increaseScore()
-            setRound()
-            player.setColor(getRandomSortedColors(getLevelDefinitions.value.colors)[0])
+            handleCollision(line)
           } else {
             gameOver()
           }
@@ -123,11 +112,20 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  function detectCollisionsLoop() {
+  const handleCollision = (line: Bar['lines'][0]) => {
+    linesPassed.add(line.id)
+    hitSound.play()
+    animateBarRemoval()
+    increaseScore()
+    setRound()
+    player.setColor(shuffleColors(getLevelDefinitions.value.colors)[0])
+  }
+
+  const detectCollisionsLoop = () => {
     if (status.value === 'playing') {
       detectCollisions()
     }
-  
+
     requestAnimationFrame(detectCollisionsLoop)
   }
 
@@ -135,7 +133,7 @@ export const useGameStore = defineStore('game', () => {
     return levelsDefinitions.value[level.value]
   })
 
-  function nextLevel() {
+  const nextLevel = () => {
     level.value++
     status.value = 'leveling'
     nextLevelSound.play()
@@ -146,7 +144,7 @@ export const useGameStore = defineStore('game', () => {
     }, 5000)
   }
 
-  function setRound() {
+  const setRound = () => {
     if (round.value === settings.roundsPerLevel - 1) {
       round.value = 0
       nextLevel()
@@ -155,20 +153,21 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  function increaseScore() {
+  const increaseScore = () => {
     score.value++
+    console.log(bars.value)
   }
 
-  function play() {
+  const play = () => {
     generateLevelsDefinitions()
     generateBars()
     generateStars()
     detectCollisionsLoop()
-    player.setColor(getRandomSortedColors(getLevelDefinitions.value.colors)[0])
+    player.setColor(shuffleColors(getLevelDefinitions.value.colors)[0])
     status.value = 'playing'
   }
 
-  function reset() {
+  const reset = () => {
     status.value = 'idle'
     level.value = 0
     round.value = 0
@@ -179,39 +178,42 @@ export const useGameStore = defineStore('game', () => {
     player.reset()
   }
 
-  function gameOver() {
+  const gameOver = () => {
     status.value = 'gameover'
     reset()
   }
 
-  watch(score, value => {
-    if (value) {
-      const bar = document.querySelector(`.bar-${bars.value[0].id}`) as HTMLElement
-      if (!bar) return
+  const animateBarRemoval = () => {
+    const bar = document.querySelector(`.bar-${bars.value[0].id}`) as HTMLElement
+    if (!bar) return
 
-      const animations = document.getAnimations()
+    const animations = document.getAnimations()
 
-      // @ts-ignore
-      const barAnimation = animations.find(animation => animation.effect.target.className.includes(`bar-${bars.value[0].id}`))
-      if (!barAnimation) return
+    // @ts-ignore
+    const barAnimation = animations.find((animation) => animation.effect.target.className.includes(`bar-${bars.value[0].id}`))
+    if (!barAnimation) return
 
-      barAnimation.commitStyles()
-      barAnimation.cancel()
+    barAnimation.commitStyles()
+    barAnimation.cancel()
 
-      const animation = bar.animate([
-        { top: bar.style.top, opacity: 1, },
-        { top: `${Number(bar.style.top.replace('%', '')) + 10}%`, opacity: 0 }
-      ], {
+    const translateYValue = parseFloat((bar.style.transform.match(/translateY\(([^)]+)\)/) || [])[1])
+
+    const animation = bar.animate(
+      [
+        { transform: `${bar.style.transform}`, opacity: 1 },
+        { transform: `translateY(${translateYValue * 1.2}px)`, opacity: 0 },
+      ],
+      {
         duration: 800,
         easing: 'ease-out',
-        fill: 'forwards'
-      })
-
-      animation.onfinish = () => {
-        bars.value = bars.value.slice(1)
+        fill: 'forwards',
       }
+    )
+
+    animation.onfinish = () => {
+      bars.value = bars.value.slice(1)
     }
-  })
+  }
 
   return {
     settings,
@@ -222,11 +224,6 @@ export const useGameStore = defineStore('game', () => {
     bars,
     stars,
     getLevelDefinitions,
-    generateBars,
-    nextLevel,
-    setRound,
-    increaseScore,
-    play,
-    gameOver
+    play
   }
 })

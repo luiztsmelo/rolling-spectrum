@@ -18,12 +18,12 @@ function animateStar () {
   const star = document.querySelector(`.star-${props.star.id}`)
   if (!star) return
 
-  const top = getRandomNumber(0, 90)
+  const top = getRandomNumber(0, game.settings.height - 2)
 
   const starAnimation = star.animate([
-    { top: `${top}%`, opacity: 0, transform: `scale(${getRandomNumber(0, 3)})` },
-    { opacity: 1, transform: `scale(${getRandomNumber(0, 3)})` },
-    { top: `${top + 7}%`, opacity: 0, transform: `scale(${getRandomNumber(0, 3)})` }
+    { transform: `translateY(${top}px) scale(${getRandomNumber(0, 3)})`, opacity: 0 },
+    { transform: `translateY(${top * 1.05}px) scale(${getRandomNumber(0, 3)})`, opacity: 1 },
+    { transform: `translateY(${top * 1.1}px) scale(${getRandomNumber(0, 3)})`, opacity: 0 }
   ], {
     duration: props.star.speed,
     easing: 'ease-in-out'

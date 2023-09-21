@@ -1,11 +1,8 @@
 export function getRandomNumber(min: number, max: number): number {
-  const randomDecimal = Math.random()
-  const randomInRange = randomDecimal * (max - min + 1) + min
-
-  return Math.floor(randomInRange)
+  return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-export function getRandomSortedColors(colors: string[]): string[] {
+export function shuffleColors(colors: string[]): string[] {
   return colors.sort(() => Math.random() - 0.5)
 }
 
@@ -13,11 +10,13 @@ export function generateRandomColors(amount: number): string[] {
   const colors = []
 
   for (let i = 0; i < amount; i++) {
-    const hue = getRandomNumber(0, 360)
-    const saturation = getRandomNumber(10, 90)
-    const lightness = getRandomNumber(10, 90)
+    const h = getRandomNumber(0, 360)
+    const s = getRandomNumber(10, 90)
+    const l = getRandomNumber(10, 90)
 
-    colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`)
+    const hslColor = `hsl(${h}, ${s}%, ${l}%)`
+
+    colors.push(hslColor)
   }
 
   return colors
@@ -25,9 +24,7 @@ export function generateRandomColors(amount: number): string[] {
 
 export function hslToRgba(color: string, alpha: number): string {
   const hslMatch = color.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/)
-  if (!hslMatch) {
-    throw new Error('Invalid HSL color format')
-  }
+  if (!hslMatch) throw new Error('Invalid HSL color format')
   
   const [, hue, saturation, lightness] = hslMatch.map(parseFloat)
 

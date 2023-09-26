@@ -16,7 +16,7 @@ export const useGameStore = defineStore('game', () => {
     levelsCount: 10,
     roundsPerLevel: 3,
     width: 720,
-    height: window.innerHeight,
+    height: window.innerHeight
   }
 
   const levelsDefinitions = ref<LevelDefinition[]>([])

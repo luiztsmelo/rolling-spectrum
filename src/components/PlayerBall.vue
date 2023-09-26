@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { hslToRgba } from '@/utils'
 import { usePlayerStore } from '@/store/player'
 
 const player = usePlayerStore()
@@ -10,7 +9,7 @@ const style = computed(() => {
     width: `${player.size}px`,
     background: player.color,
     transform: `translate(${player.position.x}px, -${player.position.y}px)`,
-    boxShadow: `2px 2px 50px 5px ${hslToRgba(player.color, 1)}`
+    boxShadow: `2px 2px 50px 5px ${player.color}`
   }
 })
 </script>

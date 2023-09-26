@@ -38,7 +38,7 @@ export const usePlayerStore = defineStore('player', () => {
 
       const moveInterval = setInterval(() => {
         velocity.value[axis] += directionSign * acceleration.value
-      }, 1000 / 60)
+      }, 16)
 
       const keyUpHandler = (event: KeyboardEvent) => {
         if (event.key === `Arrow${direction}`) {
